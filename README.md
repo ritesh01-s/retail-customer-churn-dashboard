@@ -373,14 +373,6 @@ the sole basis for customer-related actions.
 
 **Ritesh**
 
-## License
-
-Choose and add a suitable open-source license before distributing this
-project. Ensure that the license is compatible with the dataset and
-third-party assets used by the project.
-
----
-
 <p align="center">
   <strong>Retail Analytics • Machine Learning • Customer Retention</strong>
 </p>
