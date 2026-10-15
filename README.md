@@ -371,11 +371,7 @@ the sole basis for customer-related actions.
 
 ## Author
 
-**Your Name**
-
-GitHub: https://github.com/YOUR-USERNAME
-
-LinkedIn: Add your LinkedIn profile URL
+**Ritesh**
 
 ## License
 
