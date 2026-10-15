@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Profile | Retail Insights</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+<main class="main-content">
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">CUSTOMER DETAILS</p>
+            <h1>{{ customer.name or 'Customer Profile' }}</h1>
+            <p class="subtitle">
+                Customer ID: {{ customer.customer_id }}
+            </p>
+        </div>
+        <a href="{{ url_for('customers') }}">← All Customers</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p role="status">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    <section class="metrics-grid">
+        <article class="metric-card">
+            <span>Total Spending</span>
+            <h2>{{ "%.2f"|format(metrics.total_spending or 0) }}</h2>
+            <p>Currency: GBP (£)</p>
+        </article>
+        <article class="metric-card">
+            <span>Transactions</span>
+            <h2>{{ metrics.transaction_count }}</h2>
+            <p>Recorded purchases</p>
+        </article>
+        <article class="metric-card">
+            <span>Churn Probability</span>
+            <h2>
+                {% if customer.churn_probability is not none %}
+                    {{ "%.2f"|format(customer.churn_probability * 100) }}%
+                {% else %}
+                    Not scored
+                {% endif %}
+            </h2>
+            <p>{{ customer.risk_level or 'Not scored' }}</p>
+        </article>
+        <article class="metric-card">
+            <span>Last Purchase</span>
+            <h2>
+                {{ metrics.last_purchase.strftime('%d %b %Y')
+                   if metrics.last_purchase else '—' }}
+            </h2>
+            <p>Latest recorded transaction</p>
+        </article>
+    </section>
+
+    <section class="panel">
+        <h2>Edit Customer Information</h2>
+        <p>Enter verified information. Leave age blank if unknown.</p>
+
+        <form method="POST"
+              action="{{ url_for(
+                  'edit_customer',
+                  customer_id=customer.customer_id
+              ) }}">
+            <p>
+                <label for="name">Customer Name</label><br>
+                <input id="name" name="name" type="text"
+                       maxlength="150"
+                       value="{{ customer.name or '' }}" required>
+            </p>
+
+            <p>
+                <label for="age">Age</label><br>
+                <input id="age" name="age" type="number"
+                       min="1" max="120"
+                       value="{{ customer.age if customer.age is not none else '' }}">
+            </p>
+
+            <p>
+                <label for="city">City</label><br>
+                <input id="city" name="city" type="text"
+                       maxlength="100"
+                       value="{{ customer.city or '' }}">
+            </p>
+
+            <button type="submit">Save Changes</button>
+        </form>
+
+        <p><strong>Country:</strong> {{ customer.country or 'Not available' }}</p>
+        <p><strong>Join date:</strong> {{ customer.join_date or 'Not available' }}</p>
+        <p><strong>Segment:</strong> {{ customer.segment or 'Not assigned' }}</p>
+    </section>
+
+    <section class="panel">
+        <h2>Recent Transactions</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Date</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Unit Price (£)</th>
+                        <th>Amount (£)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for t in transactions %}
+                    <tr>
+                        <td>{{ t.transaction_id }}</td>
+                        <td>{{ t.transaction_date or '—' }}</td>
+                        <td>{{ t.product_category or 'Unknown product' }}</td>
+                        <td>{{ t.quantity }}</td>
+                        <td>{{ "%.2f"|format(t.unit_price or 0) }}</td>
+                        <td>{{ "%.2f"|format(t.amount or 0) }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6">No transactions found.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

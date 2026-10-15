@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retention Recommendations | Retail Insights</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+    <style>
+        .retention-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .retention-card, .recommendation-panel {
+            background: var(--card-bg, #fff);
+            border: 1px solid var(--border-color, #e5e7eb);
+            border-radius: 14px;
+            padding: 20px;
+            min-width: 0;
+        }
+
+        .retention-card h3 {
+            font-size: 14px;
+            margin: 0 0 12px;
+        }
+
+        .retention-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .retention-card p, .recommendation-panel p {
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .retention-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 18px 0;
+        }
+
+        .retention-filter {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color, #d1d5db);
+            border-radius: 8px;
+            background: var(--card-bg, white);
+            color: inherit;
+        }
+
+        .retention-table-wrapper {
+            overflow-x: auto;
+        }
+
+        .retention-table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+        }
+
+        .retention-table th, .retention-table td {
+            text-align: left;
+            padding: 13px 15px;
+            border-bottom: 1px solid var(--border-color, #e5e7eb);
+        }
+
+        .retention-table th {
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .risk-label {
+            font-weight: 600;
+        }
+
+        @media (max-width: 1000px) {
+            .retention-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
+            .retention-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="dashboard-container">
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">RI</div>
+            <div>
+                <h2>Retail Insights</h2>
+                <p>Customer Analytics</p>
+            </div>
+        </div>
+
+
+        <nav class="sidebar-nav">
+            <a href="{{ url_for('dashboard') }}" class="nav-link">
+                ▦ Dashboard
+            </a>
+
+            <a href="{{ url_for('customers') }}" class="nav-link">
+                ♙ Customers
+            </a>
+
+            <a href="{{ url_for('analytics') }}" class="nav-link">
+                ▥ Analytics
+            </a>
+
+            <a href="{{ url_for('segmentation') }}" class="nav-link">
+                ◉ Segmentation
+            </a>
+
+            <a href="{{ url_for('churn_analytics') }}" class="nav-link">
+                ◎ Churn Analytics
+            </a>
+
+            <a href="{{ url_for('retention') }}"
+               class="nav-link active">
+                ✦ Retention
+            </a>
+            <a class="nav-link" href="{{ url_for('profile') }}">♙ My Profile</a>
+            <form method="POST"
+                action="{{ url_for('logout') }}"
+                class="logout-form">
+                <button type="submit" class="logout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </nav>
+        <div class="sidebar-bottom">
+            <p>Retail Churn Prediction</p>
+            <span>Machine Learning Dashboard</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header">
+            <div>
+                <h1>Retention Recommendations</h1>
+                <p>Identify customers who may need attention and choose suitable retention actions.</p>
+            </div>
+        </header>
+
+        <section class="retention-grid">
+            {% for item in segment_cards %}
+            <article class="retention-card">
+                <h3>{{ item.name }}</h3>
+                <div class="retention-number">
+                    {{ "{:,}".format(item.customers) }}
+                </div>
+                <p>Customers</p>
+                <p>{{ item.recommendation }}</p>
+            </article>
+            {% endfor %}
+        </section>
+
+        <section class="recommendation-panel">
+            <h2>Recommended Actions</h2>
+            <p>
+                <strong>High-Value Customers:</strong>
+                Offer loyalty benefits and personalized recommendations.
+            </p>
+            <p>
+                <strong>Regular Customers:</strong>
+                Encourage repeat purchases with loyalty points and relevant offers.
+            </p>
+            <p>
+                <strong>Low-Spending Customers:</strong>
+                Test product recommendations and targeted promotions.
+            </p>
+            <p>
+                <strong>Inactive / At-Risk Customers:</strong>
+                Consider win-back campaigns and reactivation offers.
+            </p>
+            <p>
+                These are initial business rules. Their effectiveness should
+                be measured using campaign results rather than assumed.
+            </p>
+        </section>
+
+        <section class="recommendation-panel" style="margin-top: 24px;">
+            <div class="retention-toolbar">
+                <div>
+                    <h2>Customers for Follow-Up</h2>
+                    <p>Prioritize customers with higher predicted churn risk.</p>
+                </div>
+
+                <select id="riskFilter" class="retention-filter">
+                    <option value="">All risk levels</option>
+                    <option value="High">High risk</option>
+                    <option value="Medium">Medium risk</option>
+                    <option value="Low">Low risk</option>
+                    <option value="Not scored">Not scored</option>
+                </select>
+            </div>
+
+            <div class="retention-table-wrapper">
+                <table class="retention-table">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Segment</th>
+                            <th>Churn Risk</th>
+                            <th>Churn Probability</th>
+                            <th>Recommended Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="retentionTableBody">
+                        {% for customer in retention_customers %}
+                        <tr data-risk="{{ customer.risk_level }}">
+                            <td>
+                                <a href="{{ url_for(
+                                    'customer_profile',
+                                    customer_id=customer.customer_id
+                                ) }}">
+                                    {{ customer.customer_id }}
+                                </a>
+                            </td>
+                            <td>{{ customer.segment_name }}</td>
+                            <td class="risk-label">
+                                {{ customer.risk_level }}
+                            </td>
+                            <td>
+                                {% if customer.churn_probability is not none %}
+                                    {{ "%.1f"|format(
+                                        customer.churn_probability * 100
+                                    ) }}%
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                            <td>{{ customer.recommendation }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">
+                                No customer recommendations available.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    document.getElementById("riskFilter").addEventListener("change", function () {
+        const selectedRisk = this.value;
+
+        document.querySelectorAll("#retentionTableBody tr[data-risk]")
+            .forEach(row => {
+                row.style.display =
+                    !selectedRisk || row.dataset.risk === selectedRisk
+                        ? ""
+                        : "none";
+            });
+    });
+</script>
+</body>
+</html>

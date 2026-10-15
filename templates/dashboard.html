@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Insights | Churn Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">RI</div>
+            <div>
+                <h2>Retail Insights</h2>
+                <p>Customer Analytics</p>
+            </div>
+        </div>
+
+        <nav>
+            <a class="nav-link active" href="/">▦ Dashboard</a>
+            <a class="nav-link" href="{{ url_for('customers') }}">♙ Customers</a>
+            <a class="nav-link" href="{{ url_for('analytics') }}">▥ Analytics </a>
+            <a class="nav-link" href="#sales-chart">▥ Transactions</a>
+            <a href="{{ url_for('segmentation') }}" class="nav-link"><span class="nav-icon">◈</span>
+                <span>Segmentation</span>
+            </a>
+            <a class="nav-link" href="{{ url_for('churn_analytics') }}">◎ Churn Analytics</a>
+            <a class="nav-link" href="{{ url_for('retention') }}">✦ Retention</a>
+            <a class="nav-link" href="{{ url_for('profile') }}">♙ My Profile</a>
+            <form method="POST"
+                action="{{ url_for('logout') }}"
+                class="logout-form">
+                <button type="submit" class="logout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <p>Retail Churn Prediction</p>
+            <span>Machine Learning Dashboard</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">OVERVIEW</p>
+                <h1>Customer Churn Dashboard</h1>
+                <p class="subtitle">
+                    Monitor customer activity and identify
+                    customers who may stop purchasing.
+                </p>
+            </div>
+            <div class="status-pill">
+                <span class="status-dot"></span>
+                Model predictions loaded
+            </div>
+        </header>
+
+        <section class="metrics-grid">
+            <article class="metric-card">
+                <div class="metric-heading">
+                    <span>Total Customers</span>
+                    <span class="metric-icon blue">♙</span>
+                </div>
+                <h2>{{ "{:,}".format(summary.total_customers) }}</h2>
+                <p>Customers in database</p>
+            </article>
+
+            <article class="metric-card">
+                <div class="metric-heading">
+                    <span>Total Transactions</span>
+                    <span class="metric-icon purple">▤</span>
+                </div>
+                <h2>{{ "{:,}".format(summary.total_transactions) }}</h2>
+                <p>Imported transaction records</p>
+            </article>
+
+            <article class="metric-card">
+                <div class="metric-heading">
+                    <span>Customers Scored</span>
+                    <span class="metric-icon green">✓</span>
+                </div>
+                <h2>{{ "{:,}".format(summary.customers_scored) }}</h2>
+                <p>Customers with predictions</p>
+            </article>
+
+            <article class="metric-card">
+                <div class="metric-heading">
+                    <span>Average Churn Probability</span>
+                    <span class="metric-icon orange">◎</span>
+                </div>
+                <h2>{{ "%.2f"|format(average_probability * 100) }}%</h2>
+                <p>Average model-estimated probability</p>
+            </article>
+        </section>
+
+        <section class="risk-summary">
+            <div class="section-heading">
+                <div>
+                    <h2>Customer Risk Overview</h2>
+                    <p>Distribution of model-assigned risk levels</p>
+                </div>
+            </div>
+
+            <div class="risk-grid">
+                <article class="risk-card high-risk">
+                    <span class="risk-label">High Risk</span>
+                    <h2>{{ "{:,}".format(risk_counts.High) }}</h2>
+                    <p>
+                        {{ "%.1f"|format(
+                            risk_counts.High / summary.customers_scored * 100
+                            if summary.customers_scored else 0
+                        ) }}% of scored customers
+                    </p>
+                </article>
+
+                <article class="risk-card medium-risk">
+                    <span class="risk-label">Medium Risk</span>
+                    <h2>{{ "{:,}".format(risk_counts.Medium) }}</h2>
+                    <p>
+                        {{ "%.1f"|format(
+                            risk_counts.Medium / summary.customers_scored * 100
+                            if summary.customers_scored else 0
+                        ) }}% of scored customers
+                    </p>
+                </article>
+
+                <article class="risk-card low-risk">
+                    <span class="risk-label">Low Risk</span>
+                    <h2>{{ "{:,}".format(risk_counts.Low) }}</h2>
+                    <p>
+                        {{ "%.1f"|format(
+                            risk_counts.Low / summary.customers_scored * 100
+                            if summary.customers_scored else 0
+                        ) }}% of scored customers
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="charts-grid">
+            <article class="panel" id="sales-chart">
+                <div class="section-heading">
+                    <div>
+                        <h2>Monthly Revenue</h2>
+                        <p>Sales trend from imported transactions</p>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </article>
+
+            <article class="panel" id="risk-chart">
+                <div class="section-heading">
+                    <div>
+                        <h2>Risk Distribution</h2>
+                        <p>Customers by predicted risk category</p>
+                    </div>
+                </div>
+                <div class="chart-container doughnut-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel customer-panel" id="risk-table">
+            <div class="section-heading">
+                <div>
+                    <h2>Customers Requiring Attention</h2>
+                    <p>Highest predicted churn probabilities</p>
+                </div>
+                <span class="table-count">Top 10</span>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>City</th>
+                            <th>Churn Probability</th>
+                            <th>Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in top_customers %}
+                        <tr>
+                            <td>
+                                <div class="customer-name">
+                                    <span class="avatar">
+                                        {{ customer.customer_name[0]|upper }}
+                                    </span>
+                                    <div>
+                                        <strong>{{ customer.customer_name }}</strong>
+                                        <small>ID: {{ customer.customer_id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ customer.city or "Not available" }}</td>
+                            <td>
+                                <div class="probability-cell">
+                                    <span>
+                                        {{ "%.2f"|format(
+                                            customer.churn_probability * 100
+                                        ) }}%
+                                    </span>
+                                    <div class="probability-track">
+                                        <div class="probability-fill
+                                            {% if customer.risk_level == 'High' %}
+                                                fill-high
+                                            {% elif customer.risk_level == 'Medium' %}
+                                                fill-medium
+                                            {% else %}
+                                                fill-low
+                                            {% endif %}"
+                                            style="width: {{ customer.churn_probability * 100 }}%">
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if customer.risk_level == 'High' %}
+                                        badge-high
+                                    {% elif customer.risk_level == 'Medium' %}
+                                        badge-medium
+                                    {% else %}
+                                        badge-low
+                                    {% endif %}">
+                                    {{ customer.risk_level }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4">No prediction records found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="footer">
+            Retail Customer Churn Prediction & Retention Dashboard
+            <span>Prediction results are estimates, not confirmed churn.</span>
+        </footer>
+    </main>
+
+    <script>
+        const salesLabels = {{ monthly_labels | tojson }};
+        const salesValues = {{ monthly_revenue | tojson }};
+
+        const riskValues = [
+            {{ risk_counts.High }},
+            {{ risk_counts.Medium }},
+            {{ risk_counts.Low }}
+        ];
+
+        new Chart(document.getElementById("salesChart"), {
+            type: "line",
+            data: {
+                labels: salesLabels,
+                datasets: [{
+                    label: "Revenue",
+                    data: salesValues,
+                    borderColor: "#4f46e5",
+                    backgroundColor: "rgba(79, 70, 229, 0.10)",
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return "Revenue: £" +
+                                    context.parsed.y.toLocaleString(
+                                        "en-GB",
+                                        { maximumFractionDigits: 2 }
+                                    );
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: value =>
+                                "£" + value.toLocaleString("en-GB")
+                        }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById("riskChart"), {
+            type: "doughnut",
+            data: {
+                labels: ["High Risk", "Medium Risk", "Low Risk"],
+                datasets: [{
+                    data: riskValues,
+                    backgroundColor: ["#ef4444", "#f59e0b", "#10b981"],
+                    borderWidth: 0,
+                    hoverOffset: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: "68%",
+                plugins: {
+                    legend: {
+                        position: "bottom",
+                        labels: { usePointStyle: true, padding: 20 }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

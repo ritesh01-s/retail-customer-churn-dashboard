@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Retail Insights</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="auth-page">
+<div class="auth-layout">
+
+    <aside class="auth-brand">
+        <a class="auth-logo" href="{{ url_for('login') }}">
+            <span class="auth-logo-mark">↗</span>
+            Retail Insights
+        </a>
+
+        <div class="auth-brand-content">
+            <div class="auth-eyebrow">
+                <span class="auth-eyebrow-dot"></span>
+                YOUR ANALYTICS JOURNEY
+            </div>
+
+            <h1>Know your customers. <span>Grow your business.</span></h1>
+
+            <p>
+                Bring customer insights, churn prediction, and retention
+                planning together in one simple analytics workspace.
+            </p>
+
+            <div class="auth-insight-card">
+                <div class="auth-insight-label">BUILT FOR BETTER DECISIONS</div>
+                <div class="auth-insight-title">From raw data to real insights.</div>
+                <div class="auth-insight-bars">
+                    <span style="height: 45%"></span>
+                    <span style="height: 70%"></span>
+                    <span style="height: 54%"></span>
+                    <span style="height: 87%"></span>
+                    <span style="height: 63%"></span>
+                    <span style="height: 96%"></span>
+                    <span style="height: 78%"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-brand-footer">
+            Retail Customer Churn Prediction &amp; Retention Dashboard
+        </div>
+    </aside>
+
+    <main class="auth-form-panel">
+        <div class="auth-form-wrap">
+
+            <div class="auth-mobile-logo">
+                <span class="auth-logo-mark">↗</span>
+                Retail Insights
+            </div>
+
+            <div class="auth-form-heading">
+                <h2>Create your account</h2>
+                <p>Get started with your customer analytics workspace.</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="auth-flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form class="auth-form" method="POST" action="{{ url_for('register') }}">
+                <div class="auth-field">
+                    <label for="username">Email or username</label>
+                    <div class="auth-input-wrap">
+                        <span>✉</span>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="Choose a username"
+                            autocomplete="username"
+                            maxlength="100"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="password">Password</label>
+                    <div class="auth-input-wrap">
+                        <span>⌑</span>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Create a password (8+ characters)"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="confirm_password">Confirm password</label>
+                    <div class="auth-input-wrap">
+                        <span>✓</span>
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            name="confirm_password"
+                            placeholder="Enter your password again"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <p class="auth-terms">
+                    By creating an account, you can access the Retail Insights
+                    dashboard and its analytics features.
+                </p>
+
+                <button type="submit" class="auth-submit">Create account →</button>
+            </form>
+
+            <div class="auth-switch">
+                Already have an account?
+                <a href="{{ url_for('login') }}">Sign in</a>
+            </div>
+        </div>
+    </main>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers | Retail Insights</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+<main class="main-content">
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">CUSTOMER MANAGEMENT</p>
+            <h1>Customer Profiles</h1>
+            <p class="subtitle">
+                Search customers and review their churn risk.
+            </p>
+        </div>
+        <a href="{{ url_for('dashboard') }}">← Dashboard</a>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p role="status">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+
+    <section class="panel">
+        <form method="GET" action="{{ url_for('customers') }}">
+            <input type="search" name="search"
+                   placeholder="Search name or customer ID"
+                   value="{{ search }}">
+
+            <select name="risk">
+                <option value="">All risk levels</option>
+                <option value="High"
+                    {% if selected_risk == 'High' %}selected{% endif %}>
+                    High Risk
+                </option>
+                <option value="Medium"
+                    {% if selected_risk == 'Medium' %}selected{% endif %}>
+                    Medium Risk
+                </option>
+                <option value="Low"
+                    {% if selected_risk == 'Low' %}selected{% endif %}>
+                    Low Risk
+                </option>
+            </select>
+
+            <button type="submit">Search</button>
+            <a href="{{ url_for('customers') }}">Clear</a>
+        </form>
+
+        <p>{{ customers|length }} customers shown (maximum 200).</p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>City</th>
+                        <th>Churn Probability</th>
+                        <th>Risk</th>
+                        <th>Profile</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for c in customers %}
+                    <tr>
+                        <td>{{ c.customer_id }}</td>
+                        <td>{{ c.name or 'Not provided' }}</td>
+                        <td>{{ c.age if c.age is not none else '—' }}</td>
+                        <td>{{ c.city or 'Not provided' }}</td>
+                        <td>
+                            {% if c.churn_probability is not none %}
+                                {{ "%.2f"|format(c.churn_probability * 100) }}%
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ c.risk_level }}</td>
+                        <td>
+                            <a href="{{ url_for(
+                                'customer_profile',
+                                customer_id=c.customer_id
+                            ) }}">View profile</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7">No customers found.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+</body>
+</html>

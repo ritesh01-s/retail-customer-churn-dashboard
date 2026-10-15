@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | Retail Insights</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">RI</div>
+            <div>
+                <h2>Retail Insights</h2>
+                <p>Customer Analytics</p>
+            </div>
+        </div>
+
+        <nav>
+            <a class="nav-link" href="{{ url_for('dashboard') }}">▦ Dashboard</a>
+            <a class="nav-link" href="{{ url_for('customers') }}">♙ Customers</a>
+            <a class="nav-link" href="{{ url_for('analytics') }}">▥ Analytics</a>
+            <a class="nav-link" href="{{ url_for('dashboard') }}#sales-chart">▤ Transactions</a>
+            <a class="nav-link" href="{{ url_for('segmentation') }}">◈ Segmentation</a>
+            <a class="nav-link" href="{{ url_for('churn_analytics') }}">◎ Churn Analytics</a>
+            <a class="nav-link" href="{{ url_for('retention') }}">✦ Retention</a>
+            <a class="nav-link active" href="{{ url_for('profile') }}">♙ My Profile</a>
+            <form method="POST"
+                action="{{ url_for('logout') }}"
+                class="logout-form">
+                <button type="submit" class="logout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <p>Retail Churn Prediction</p>
+            <span>Machine Learning Dashboard</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">ACCOUNT</p>
+                <h1>My Profile</h1>
+                <p class="subtitle">
+                    View your account information.
+                </p>
+            </div>
+        </header>
+
+        <section class="metrics-grid">
+            <article class="metric-card">
+                <div class="metric-heading">
+                    <span>Username</span>
+                    <span class="metric-icon blue">♙</span>
+                </div>
+                <h2>{{ user.username }}</h2>
+                <p>Your registered username</p>
+            </article>
+
+            <article class="metric-card">
+                <div class="metric-heading">
+                    <span>Account ID</span>
+                    <span class="metric-icon purple">#</span>
+                </div>
+                <h2>{{ user.user_id }}</h2>
+                <p>Your unique account identifier</p>
+            </article>
+
+            <article class="metric-card">
+                <div class="metric-heading">
+                    <span>Account Role</span>
+                    <span class="metric-icon green">✓</span>
+                </div>
+                <h2>{{ user.role or 'analyst' }}</h2>
+                <p>Your assigned application role</p>
+            </article>
+        </section>
+
+        <section class="panel" style="margin-top: 24px; padding: 24px;">
+            <h2>Account Information</h2>
+            <p>Your account is registered with Retail Insights.</p>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Role:</strong> {{ user.role or 'analyst' }}</p>
+
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit">Logout</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
